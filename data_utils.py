@@ -24,6 +24,8 @@ class VideoDataset(Dataset):
             scale_factor (int): Factor with which to scale down the image
             ### Note: the device id is not tested.
         """
+        #  the model in use downscales the input by 8, hence the input requires to be multiple of 8
+        self.adjust_factor = 8
         self.video_path = path_to_video
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.scale_factor = scale_factor
@@ -49,17 +51,22 @@ class VideoDataset(Dataset):
     def __getitem__(self, idx):
         ret, frame = self.cap.read()
         if ret:
-            self.new_width = int(self.width/self.scale_factor/8)*8
-            self.new_height = int(self.height/self.scale_factor/8)*8
-            frame_resized = cv2.resize(frame, (self.new_width, self.new_height))
+            self.width = int(self.width / self.scale_factor / self.adjust_factor) * self.adjust_factor
+            self.height = int(self.height / self.scale_factor / self.adjust_factor) * self.adjust_factor
+            frame_resized = cv2.resize(frame, (self.width, self.height))
             sample = self.input_transform(frame_resized)
             original = frame_resized
         else:
-            sample = self.input_transform(np.zeros((self.new_height, self.new_width, 3), dtype=np.uint8))
-            original = self.input_transform(np.zeros((self.new_height, self.new_width, 3), dtype=np.uint8))
+            sample = self.input_transform(np.zeros((self.height, self.width, 3), dtype=np.uint8))
+            original = self.input_transform(np.zeros((self.height, self.width, 3), dtype=np.uint8))
         return {'image': sample, 'original': original}
 
     def input_transform(self, frame):
+        """
+        Transform video frame to input tensor ready to be used on the gpu
+        :param frame: numpy image array
+        :return: half-precision pytorch tensor on gpu (if available)
+        """
         tensor = transforms.ToTensor()(frame).to(
             device=self.device)  # 1 convert to float tensor, change to C x W x H and scale to  [0,1]
         tensor = tensor[[2, 1, 0], :]  # 2 convert BGR to RGB
@@ -68,7 +75,7 @@ class VideoDataset(Dataset):
 
 
 class SegmentationDataset(Dataset):
-    """Table top segmentation dataset."""
+    """Table top segmentation dataset for training."""
 
     def __init__(self, dataset_list_file, transforms_op=None):
         """
@@ -88,6 +95,10 @@ class SegmentationDataset(Dataset):
         return len(self.sample_list)
 
     def read_list(self):
+        """
+        Read image training and label list
+        :return:  list of paths of image and labels
+        """
         with open(self.dataset_list_file, 'r') as f:
             reader = csv.reader(f)
             file_list = list(reader)
@@ -116,6 +127,11 @@ class SegmentationDataset(Dataset):
         return sample
 
     def input_transform(self, img):
+        """
+        Transform training image to tensor, ready to be used on the gpu
+        :param img: numpy image array
+        :return: pytorch tensor on gpu(if available)
+        """
         tensor = transforms.ToTensor()(img).to(
             device=self.device)  # 1 convert to float tensor, change to C x W x H and
         # scale to  [0,1]
@@ -124,6 +140,11 @@ class SegmentationDataset(Dataset):
         return tensor
 
     def label_transform(self, label):
+        """
+        Transform label image array to tensor, ready to be used on the gpu
+        :param label: numpy image array
+        :return: pytorch tensor on gpu(if available)
+        """
         tensor = transforms.ToTensor()(label).to(device=self.device)
         return tensor
 
@@ -132,8 +153,7 @@ class RandomCrop(object):
     """Crop randomly the image in a sample.
 
     Args:
-        output_size (tuple or int): Desired output size. If int, square crop
-            is made.
+        output_size (tuple or int): Desired output size. If int, square crop is made.
     """
 
     def __init__(self, output_size):
@@ -160,12 +180,22 @@ class RandomCrop(object):
 
 
 def image_tensor_to_numpy(tensor):
+    """
+    Convert tensor back to numpy image array
+    :param tensor: pytorch tensor on gpu
+    :return: numpy image array
+    """
     tensor = tensor.squeeze(0)
     img = tensor.detach().cpu().numpy().astype(np.uint8)
     return img
 
 
 def label_tensor_to_numpy(tensor):
+    """
+    Convert prediction tensor to numpy image array
+    :param tensor: pytorch tensor on gpu
+    :return: numpy image array
+    """
     tensor = torch.sigmoid(tensor) * 255
     # convert to numpy
     tensor = tensor.squeeze(0)
@@ -174,6 +204,11 @@ def label_tensor_to_numpy(tensor):
 
 
 def detect_table(img):
+    """
+
+    :param img:
+    :return:
+    """
     # non-maxima suppression
     ret, thresh = cv2.threshold(img, 250, 255, 0)
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
