@@ -1,3 +1,8 @@
+# ------------------------------------------------------------------------------
+# Licensed under the MIT License.
+# Written by Ishrat Badami (badami.ishrat@gmail.com)
+# ------------------------------------------------------------------------------
+
 import json
 import os
 
