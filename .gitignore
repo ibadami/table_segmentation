@@ -1,0 +1,8 @@
+.vscode/
+.idea/
+__pycache__/
+*.py[co]
+./result/
+./pretrained_models/
+./dataset/
+*.zip
