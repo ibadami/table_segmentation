@@ -1,9 +1,9 @@
 ## Semantic segmentation of table-top:
 
-This assignment took 32 hours of work without including the training runs and initial research for model selection.
-All the experiments are done on RTX 2070 super (8 GB) GPU and i7 16 core (64 GB) CPU. 
-The FPS for input video is 60 fps
-The FPS for prediction is 65 fps when visualization is turned off.
+- This assignment took 32 hours of work without including the training runs and initial research for model selection.
+- All the experiments are done on RTX 2070 super (8 GB) GPU and i7 16 core (64 GB) CPU, OS Ubuntu 20.04
+- The FPS for input video is 60 fps.
+- The FPS for prediction is 65 fps when visualization is turned off.
 
 ### License
 Each file shows the original author of the file. The license of the original repository is MIT and hence the current 
@@ -21,6 +21,10 @@ manually from the list on `environment.yml` file.
 Activate the conda environment using:
 `conda activate tabletopseg`
 
+Install [pytorch](https://pytorch.org/get-started/locally/) and other torch libs in conda environment
+`pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html`
+Please refer to pytorch installation if your OS is not linux.
+
 For creating videos, you must have ffmpeg installed on your machine:
 To install ffmpeg run:
 `sudo apt install ffmpeg`
@@ -28,12 +32,14 @@ To install ffmpeg run:
 Note: there are certain other dependencies that are already present in my 
 machine and hence not actively installed during this project.
 
-The code can be downloaded from here.
 
 I have created the dataset for training using labelme software.
 For each video, first image of that video is saved as a training image. Using the labelme software, precise label for the 
 table is generated and saved as json.
-Download the dataset, pre-trained models and results and extract the folders in the main code folder.
+Download the [dataset](https://drive.google.com/drive/folders/1VNH_E25p9g_F7D8UmwML6Wj_GxKkVuf_?usp=sharing),
+[pre-trained models](https://drive.google.com/drive/folders/1Pu2WzkhITPo2iGRXH57oV29ySxRZpUjn?usp=sharing) and 
+[results](https://drive.google.com/drive/folders/1GMXv-vesOd26VNrEYj79yWiLqrK-pjDY?usp=sharing) 
+and extract the folders in the main code folder.
 
 ### Approach
 This project is a transfer learning performed for semantic segmentation of tabletop using the DDRNet trained on 
