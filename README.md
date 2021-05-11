@@ -10,24 +10,24 @@ Each file shows the original author of the file. The license of the original rep
 repo extends the same license.
 
 ### Setup
-To run the code, first setup a conda environment using the `environment.yml` file
-
+1. To run the code, first setup a conda environment using the `environment.yml` file
 `conda env create -f environment.yml`
-
-Alternatively, you can create conda env first and then install the requirements 
+(Alternatively, you can create conda env first and then install the requirements 
 manually from the list on `environment.yml` file.
-`conda create -n tabletopseg python=3.9 anaconda`
+`conda create -n tabletopseg python=3.9 anaconda`)
 
-Activate the conda environment using:
+
+2. Activate the conda environment using:
 `conda activate tabletopseg`
+   
 
-Install [pytorch](https://pytorch.org/get-started/locally/) and other torch libs in conda environment
+3. Install [pytorch](https://pytorch.org/get-started/locally/) and other torch libs in conda environment
 `pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html`
 Please refer to pytorch installation if your OS is not linux.
 
-For creating videos, you must have ffmpeg installed on your machine:
-To install ffmpeg run:
-`sudo apt install ffmpeg`
+
+4. For creating videos, you must have ffmpeg installed on your machine.
+To install ffmpeg run: `sudo apt install ffmpeg`
 
 Note: there are certain other dependencies that are already present in my 
 machine and hence not actively installed during this project.
@@ -36,14 +36,14 @@ machine and hence not actively installed during this project.
 I have created the dataset for training using labelme software.
 For each video, first image of that video is saved as a training image. Using the labelme software, precise label for the 
 table is generated and saved as json.
-Download the [dataset](https://drive.google.com/drive/folders/1VNH_E25p9g_F7D8UmwML6Wj_GxKkVuf_?usp=sharing),
+5. Download the [dataset](https://drive.google.com/drive/folders/1VNH_E25p9g_F7D8UmwML6Wj_GxKkVuf_?usp=sharing),
 [pre-trained models](https://drive.google.com/drive/folders/1Pu2WzkhITPo2iGRXH57oV29ySxRZpUjn?usp=sharing) and 
 [results](https://drive.google.com/drive/folders/1GMXv-vesOd26VNrEYj79yWiLqrK-pjDY?usp=sharing) 
 and extract the folders in the main code folder.
 
 ### Approach
-This project is a transfer learning performed for semantic segmentation of tabletop using the DDRNet trained on 
-cityscape dataset. Please refer to the source code for the model here https://github.com/chenjun2hao/DDRNet.pytorch
+This project is a transfer learning performed for semantic segmentation of tabletop using the [DDRNet](https://github.com/chenjun2hao/DDRNet.pytorch
+) trained on cityscape dataset. Please refer to the source model code for more details.
 
 #### Training
 Once the dataset is generated, train the model using 
@@ -70,16 +70,17 @@ To create the visualization using those detections and the original video, you c
 
 The detections saved during the test.py are scaled to the scaled factor passed. In order to get the detection back to original scale,
 you can use `scale_back_detections()` function.
+
 Refer to `visualize.py` for more information.
 
 #### Evaluation
 Due to no ground truth available for the videos, I have not implemented the evaluation script.
-But the visual test shows high segmentation accuracy.
+However, the qualitative results shows high segmentation accuracy.
 
 #### Future work
-I have choosen this method because it is not just efficient but also has high accuracy.
-For the future tasks, the same method can be easily scaled to more classes for segmentation with no loss of speed.
-The current data is very low variance and hence the model can be overtrained for the 3 images used for training.
-It is hence important to capture more variety of table texture and train the m
+I have chosen this method because it is not only efficient but also yields high accuracy.
+For the future tasks, the same method can be easily scaled to more classes for segmentation with minimal loss of speed.
+The current data is very low variance and hence the model can be over-trained.
+It is hence important to capture more variety of table texture and train the model on variety of images.
 
 Note: If you run into an error or require more information, please contact me.
