@@ -46,23 +46,27 @@ The default parameters will take care of all the option for the present setup.
 
 #### Testing
 To infer the new video, use the following command
-python3.9 test.py --visualize True --scaling=2 
+`python3.9 test.py --visualize True --scaling=2`
 - visualize switches on the debugging mode and shows the detection on the fly.
 - scaling is used to scale down the input image size for faster inference. Higher the scaling lower the segmentation 
   accuracy will be.
   
 Rest of the options in default will work with the current setup.
 
-#### visualization
+#### Visualization
 Apart from turning on the visualization flag during inference, you can create the visualization using the tools
 provided in the visualize.py
 When visualize is True in test.py, the full results of original image and segmentation masks will be written in the disk.
-Using these images a resultant video will be created by function create_video_from_images.py
+Using these images a resultant video will be created by function `create_video_from_images.py`
 
 If the visualization is False during test.py, only detections are saved.
-To create the visualization using those detections and the original video, you can use create_video_from_detections.py function.
+To create the visualization using those detections and the original video, you can use `create_video_from_detections.py` function.
 
 The detections saved during the test.py are 
-Refer to visualize.py for more information.
+Refer to `visualize.py` for more information.
 
-If you run into an error or require more information, please contact me.
+#### Evaluation
+Due to no ground truth available for the videos, I have not implemented the evaluation script.
+But the visual test shows high segmentation accuracy.
+
+Note: If you run into an error or require more information, please contact me.

@@ -41,10 +41,14 @@ class VideoDataset(Dataset):
         if not self.cap.isOpened():
             print("Error opening video stream or file")
         self.fps = np.ceil(self.cap.get(cv2.CAP_PROP_FPS)).astype(int)
-        self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.mean = MEAN  # cityscape pretrained model mean
         self.std = STD  # cityscape pretrained model std
+
+        # update height and width
+        self.width = int(frame_width / self.scale_factor / self.adjust_factor) * self.adjust_factor
+        self.height = int(frame_height / self.scale_factor / self.adjust_factor) * self.adjust_factor
 
     def __len__(self):
         # for some reason the number of frames per second is wrongly
@@ -56,14 +60,12 @@ class VideoDataset(Dataset):
     def __getitem__(self, idx):
         ret, frame = self.cap.read()
         if ret:
-            self.width = int(self.width / self.scale_factor / self.adjust_factor) * self.adjust_factor
-            self.height = int(self.height / self.scale_factor / self.adjust_factor) * self.adjust_factor
             frame_resized = cv2.resize(frame, (self.width, self.height))
             sample = self.input_transform(frame_resized)
             original = frame_resized
         else:
             sample = self.input_transform(np.zeros((self.height, self.width, 3), dtype=np.uint8))
-            original = self.input_transform(np.zeros((self.height, self.width, 3), dtype=np.uint8))
+            original = np.zeros((self.height, self.width, 3), dtype=np.uint8)
         return {'image': sample, 'original': original}
 
     def input_transform(self, frame):

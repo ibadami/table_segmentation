@@ -70,6 +70,10 @@ if __name__ == "__main__":
 
     os.makedirs(output_path, exist_ok=True)
 
+    if visualize:
+        output_image_dir = os.path.join(output_path, 'images')
+        os.makedirs(output_image_dir, exist_ok=True)
+
     net = prepare_model(model_path)
     dataloader, dataset = load_data(video_path, scale_factor)
 
@@ -80,6 +84,7 @@ if __name__ == "__main__":
         desc = 'inferring video stream'
         for i in tqdm(dataloader, total=(len(dataloader)), desc=desc):
             frames += 1
+
             start = time.time()  # start time calculation from model inference
             y = net(i['image'])
 
@@ -97,13 +102,13 @@ if __name__ == "__main__":
                     mask = draw_table(mask, polygon)
                     detection_frame = cv2.hconcat([img, mask])
                     detection_frame_resized = downsize_img(detection_frame)
-                    file_path = os.path.join(output_path, 'images/frame_' + "%04d" % frames + '.png')
+                    file_path = os.path.join(output_image_dir, 'frame_' + "%04d" % frames + '.png')
                     cv2.imwrite(file_path, detection_frame)
                     cv2.imshow("prediction", detection_frame_resized)
                     cv2.waitKey(1)
 
     with open(detection_file_path, 'w') as file:
-        json.dump(detections, file, indent=4, sort_keys=True)
+        json.dump(detections, file, indent=4)
 
     end = time.time()
     print("total time taken in seconds = ", time_total)
