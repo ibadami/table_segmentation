@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from config import config
 from data_utils import VideoDataset, detect_table, image_tensor_to_numpy, label_tensor_to_numpy
-from visualize import draw_table, downsize_img
+from visualize import create_video_from_detection, create_video_from_images, draw_table, downsize_img
 from model import DualResNet_hookmotion
 import argparse
 
@@ -109,6 +109,10 @@ if __name__ == "__main__":
 
     with open(detection_file_path, 'w') as file:
         json.dump(detections, file, indent=4)
+
+    if visualize:
+        output_video_path = os.path.join(output_path, os.path.basename(video_path))
+        create_video_from_images(output_image_dir, output_video_path)
 
     end = time.time()
     print("total time taken in seconds = ", time_total)

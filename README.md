@@ -57,16 +57,23 @@ Rest of the options in default will work with the current setup.
 Apart from turning on the visualization flag during inference, you can create the visualization using the tools
 provided in the visualize.py
 When visualize is True in test.py, the full results of original image and segmentation masks will be written in the disk.
-Using these images a resultant video will be created by function `create_video_from_images.py`
+Using these images a resultant video will be created by function `create_video_from_images()`
 
 If the visualization is False during test.py, only detections are saved.
-To create the visualization using those detections and the original video, you can use `create_video_from_detections.py` function.
+To create the visualization using those detections and the original video, you can use `create_video_from_detections()` function.
 
-The detections saved during the test.py are 
+The detections saved during the test.py are scaled to the scaled factor passed. In order to get the detection back to original scale,
+you can use `scale_back_detections()` function.
 Refer to `visualize.py` for more information.
 
 #### Evaluation
 Due to no ground truth available for the videos, I have not implemented the evaluation script.
 But the visual test shows high segmentation accuracy.
+
+#### Future work
+I have choosen this method because it is not just efficient but also has high accuracy.
+For the future tasks, the same method can be easily scaled to more classes for segmentation with no loss of speed.
+The current data is very low variance and hence the model can be overtrained for the 3 images used for training.
+It is hence important to capture more variety of table texture and train the m
 
 Note: If you run into an error or require more information, please contact me.

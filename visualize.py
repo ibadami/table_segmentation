@@ -45,11 +45,15 @@ def scale_back_detections(detection_dir, save_detections=False):
     detection_file = os.path.join(detection_dir, 'detections.json')
     with open(detection_file, 'r') as file:
         detections = json.load(file)
-
-    if detections['scale_factor'] > 1:
+    scale = detections['scale']
+    if detections['scale'] > 1:
         # run for loop
+        for k in detections.keys():
+            if k != 'scale':
+                detections[k] = (np.array(detections[k])*scale).tolist()
         # make scale factor = 1
         if save_detections:
+            detections['scale'] = 1
             # dump detection at the same path
             with open(detection_file, 'w') as file:
                 json.dump(detections, file, indent=4, sort_keys=True)
@@ -57,40 +61,38 @@ def scale_back_detections(detection_dir, save_detections=False):
 
 
 def create_video_from_images(img_dir, video_out_path=''):
-    if video_out_path == '':
-        video_out_path = os.join(img_dir, img_dir.split('/')[-1] + '.mp4')
-    command = 'ffmpeg -r 60 -f image2 -i ' + os.path.join(img_dir, 'final_%04d.png') \
+    command = 'ffmpeg -r 60 -f image2 -i ' + os.path.join(img_dir, 'frame_%04d.png') \
               + ' -c:v libx264 -pix_fmt yuv420p -vsync 0 ' + video_out_path
     os.system(command)
 
 
 def create_video_from_detection(detections_dir, path_to_video, original_scale=False):
-    tabel_segments_coordinate_file = os.path.join(detections_dir, 'detections.json')
-    with open(tabel_segments_coordinate_file, 'r') as file:
+    print('Please have patience, this can take a while....')
+    detections_file = os.path.join(detections_dir, 'detections.json')
+    with open(detections_file, 'r') as file:
         detections = json.load(file)
-    if original_scale:
-        detections = scale_back_detections(detections_dir)
 
-    video_output_path = os.path.join(detections_dir, os.path.basename(path_to_video) + '_detections.mp4')
+    video_output_path = os.path.join(detections_dir, os.path.basename(path_to_video)[:-4] + '_detections.mp4')
     tmp_dir = os.path.join(detections_dir, 'tmp')
     os.makedirs(tmp_dir, exist_ok=True)
 
     cap = cv2.VideoCapture(path_to_video)
-    scale_factor = detections['scale_factor']
-    im_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) / scale_factor / 8) * 8
-    im_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) / scale_factor / 8) * 8
+    scale_factor = detections['scale']
 
-    dim = (im_width, im_height)
     frame_no = 0
     while 1:
         ret, frame = cap.read()
         if ret:
             frame_no += 1
             points = np.array(detections[str(frame_no)])
+            if original_scale:
+                points = points*scale_factor
+            else:
+                frame = downsize_img(frame, scale_factor)
             img = draw_table(frame, points)
-            im_down = cv2.resize(img, dim).astype(np.uint8)
+
             file_path = os.path.join(tmp_dir, 'frame_' + "%04d" % frame_no + '.png')
-            cv2.imwrite(file_path, im_down)
+            cv2.imwrite(file_path, img)
         else:
             break
 
@@ -99,11 +101,13 @@ def create_video_from_detection(detections_dir, path_to_video, original_scale=Fa
     # delete temporary image folder
     os.system('rm -r ' + tmp_dir)
 
+    print('Generated video is saved at ', video_output_path)
+
 
 if __name__ == "__main__":
-    video_path = 'dataset/videos/LuckyLadies.mp4'
-    image_output_path = 'results/masks'
-    detection_file_path = 'detections.json'
+    root_dir = './results'
+    video_path = './dataset/videos/Baccarat.mp4'
+    video_name = os.path.basename(video_path)[:-4]
+    detections_dir_path = os.path.join(root_dir, video_name)
 
-
-    scale_back_detections(detection_file_path, save_detections=False)
+    create_video_from_detection(detections_dir_path, video_path, original_scale=False)
