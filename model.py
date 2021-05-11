@@ -18,7 +18,7 @@ bn_mom = 0.1
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False)
+    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=True)
 
 
 class BasicBlock(nn.Module):
@@ -208,7 +208,7 @@ class segmenthead(nn.Module):
 
 class DualResNet(nn.Module):
 
-    def __init__(self, block, layers, num_classes=19, planes=64, spp_planes=128, head_planes=128, augment=False):
+    def __init__(self, block, layers, num_classes=19, planes=64, spp_planes=128, head_planes=128, augment=True):
         super(DualResNet, self).__init__()
 
         highres_planes = planes * 2
@@ -347,7 +347,7 @@ class DualResNet(nn.Module):
 
 def DualResNet_imagenet(cfg, pretrained=False):
     model = DualResNet(BasicBlock, [2, 2, 2, 2], num_classes=19, planes=32, spp_planes=128, head_planes=64,
-                       augment=False)
+                       augment=True)
     if pretrained:
         pretrained_state = torch.load(cfg.MODEL.PRETRAINED, map_location='cpu')
         model_dict = model.state_dict()

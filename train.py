@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 # Written by Ishrat Badami (badami.ishrat@gmail.com)
 # ------------------------------------------------------------------------------
-
+import argparse
 import copy
 import os
 import time
@@ -28,6 +28,11 @@ def load_pre_trained_model_weights(path):
 
 
 def transfer_learning(model):
+    """
+    Modifies the last layers of the model from 19 class output to single class output
+    :param model: DDRNet model pretrained on Cityscape dataset
+    :return: model for single class
+    """
     model.final_layer.conv2 = nn.Conv2d(64, 1, kernel_size=(1, 1), stride=(1, 1))
     model.seghead_extra.conv2 = nn.Conv2d(64, 1, kernel_size=(1, 1), stride=(1, 1))
     return model
@@ -85,19 +90,29 @@ def train_model(model, criterion, optimizer, data_loader, n_epochs=50000):
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
-    print('Best val Acc: {:4f}'.format(best_loss))
+    print('Lowest val Acc: {:4f}'.format(best_loss))
 
     return best_model_wts
 
 
 if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser(description='Train tabletop segmentation using pretrained DDRNet')
+    parser.add_argument('--training_data', default="./dataset/train.lst", type=str, help='Path to training data file')
+    parser.add_argument('--model', default="./pretrained_models/best_val_smaller.pth", type=str, 
+                        help='path to pretrained model on cityscape')
+    parser.add_argument('--model_save_path', default='./pretrained_models/final_state.pth', type=str,
+                        help='output path for trained model on table top data')
+    parser.add_argument('--epochs', default=50000, type=int, help='number of epochs')
 
-    training_data = './dataset/train.lst'
-    path_to_model = "./pretrained_models/best_val_smaller.pth"
-    model_save_path = './result/final_state.pth'
-    num_epochs = 50000
+    args = parser.parse_args()
 
-    training_dataset = SegmentationDataset(dataset_list_file='./dataset/train.lst',
+    training_data = args.training_data
+    path_to_model = args.model
+    model_save_path = args.model_save_path
+    num_epochs = args.epochs
+
+    training_dataset = SegmentationDataset(dataset_list_file=training_data,
                                            transforms_op=transforms.Compose([
                                                RandomCrop((512)),
                                            ]))
@@ -108,8 +123,14 @@ if __name__ == "__main__":
     net = transfer_learning(net)
     net = net.to(device=device)
 
+    # The empirical weight of the class pos_weight is set to avoid model collapsing to always returning 1 for all its
+    # pixels. 
     loss = torch.nn.BCEWithLogitsLoss(reduction='mean', pos_weight=torch.tensor(0.3))
-    adam_optimizer = torch.optim.Adam(params=net.parameters())
+    adam_optimizer = torch.optim.Adam(params=net.parameters())  # default param works best
+    
+    # Fine tune model for table top semantic segmentation task
     trained_model_weights = train_model(net, loss, adam_optimizer, dataloader, n_epochs=num_epochs)
+    
+    # save model weights
     torch.save(trained_model_weights, os.path.join(model_save_path))
 

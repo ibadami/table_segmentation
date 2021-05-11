@@ -51,7 +51,8 @@ def load_data(path, scaling):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Infer table in the video')
-    parser.add_argument('--result_dir', default="./result",  type=str, help='Path to result directory')
+    parser.add_argument('--result_dir', default="./results",  type=str, help='Path to results directory')
+    parser.add_argument('--model_path', default="./pretrained_models/final_state.pth",  type=str, help='Path to model')
     parser.add_argument('--video_file', default="./dataset/videos/LuckyLadies.mp4", type=str, help='path to video')
     parser.add_argument('--visualize', default=False, type=bool, help='If true, shows the output during inference')
     parser.add_argument('--scaling', default=2, type=int, help='scaling down factor for input video frames')
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     output_path = os.path.join(result_dir, os.path.basename(video_path)[:-4])
     scale_factor = args.scaling
 
-    model_path = os.path.join(result_dir, "final_state.pth")
+    model_path = args.model_path
     detection_file_path = os.path.join(output_path, 'detections.json')
 
     os.makedirs(output_path, exist_ok=True)

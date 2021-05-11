@@ -102,8 +102,8 @@ def create_video_from_detection(detections_dir, path_to_video, original_scale=Fa
 
 if __name__ == "__main__":
     video_path = 'dataset/videos/LuckyLadies.mp4'
-    image_output_path = './result/masks'
-    detection_file_path = './result/detections.json'
+    image_output_path = 'results/masks'
+    detection_file_path = 'detections.json'
 
 
-    scale_back_detections(detection_dir, save_detections=False)
+    scale_back_detections(detection_file_path, save_detections=False)

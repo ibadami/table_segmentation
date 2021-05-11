@@ -2,7 +2,7 @@
 .idea/
 __pycache__/
 *.py[co]
-./result/
+results/
 ./pretrained_models/
 ./dataset/
 *.zip
